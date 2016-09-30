@@ -5,3 +5,8 @@ deps
 *.beam
 *.plt
 erl_crash.dump
+.idea
+.rebar
+*.iml
+/log/*
+
