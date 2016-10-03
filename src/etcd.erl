@@ -45,7 +45,7 @@ set(Url, Key, Value, Timeout) ->
 %%   Timeout = pos_integer() | infinity
 %%   Result = {ok, response() | [response()]} | {error, atom()}.
 %% @end
--spec set(url(), key(), value(), pos_integer(), pos_timeout()) -> result().
+-spec set(url(), key(), prev_value(), pos_integer(), pos_timeout()) -> result().
 set(Url, Key, Value, TTL, Timeout) ->
   FullUrl = url_prefix(Url) ++ "/keys" ++ convert_to_string(Key),
   Result = post_request(put, FullUrl, [{"value", Value}, {"ttl", TTL}], Timeout),
@@ -54,30 +54,34 @@ set(Url, Key, Value, TTL, Timeout) ->
 %% @spec (Url, Key, PrevValue, Value, Timeout) -> Result
 %%   Url = string()
 %%   Key = binary() | string()
-%%   PrevValue = binary() | string()
+%%   PrevValue = binary() | {prevValue, binary()} | {prevIndex, integer()} | {prevExist, boolean()}
 %%   Value = binary() | string()
 %%   Timeout = pos_integer() | 'infinity'
 %%   Result = {ok, response() | [response()]} | {error, atom()}.
 %% @end
--spec test_and_set(url(), key(), value(), value(), pos_timeout()) -> result().
-test_and_set(Url, Key, PrevValue, Value, Timeout) ->
+-spec test_and_set(url(), key(), prev_value(), value(), pos_timeout()) -> result().
+test_and_set(Url, Key, PrevValue, Value, Timeout) when is_binary(PrevValue) ->
+  test_and_set(Url, Key, {prevValue, PrevValue}, Value, Timeout);
+test_and_set(Url, Key, {PrevWhat, Prev}, Value, Timeout) when PrevWhat == prevValue ; PrevWhat == prevIndex ;  PrevWhat == prevExist ->
   FullUrl = url_prefix(Url) ++ "/keys" ++ convert_to_string(Key),
-  Result = post_request(put, FullUrl, [{"value", Value}, {"prevValue", PrevValue}], Timeout),
+  Result = post_request(put, FullUrl, [{value, Value}, {PrevWhat, Prev}], Timeout),
   handle_request_result(Result).
 
 %% @spec (Url, Key, PrevValue, Value, TTL, Timeout) -> Result
 %%   Url = string()
 %%   Key = binary() | string()
-%%   PrevValue = binary() | string()
+%%   PrevValue = binary() | {prevValue, binary()} | {prevIndex, integer()} | {prevExist, boolean()}
 %%   Value = binary() | string()
 %%   TTL = pos_integer()
 %%   Timeout = pos_integer() | infinity
 %%   Result = {ok, response() | [response()]} | {error, atom()}.
 %% @end
--spec test_and_set(url(), key(), value(), value(), pos_integer(), pos_timeout()) -> result().
-test_and_set(Url, Key, PrevValue, Value, TTL, Timeout) ->
+-spec test_and_set(url(), key(), prev_value(), value(), pos_integer(), pos_timeout()) -> result().
+test_and_set(Url, Key, PrevValue, Value, TTL, Timeout) when is_binary(PrevValue) ->
+  test_and_set(Url, Key, {prevValue, PrevValue}, Value, TTL, Timeout);
+test_and_set(Url, Key, {PrevWhat, Prev}, Value, TTL, Timeout) when PrevWhat == prevValue ; PrevWhat == prevIndex ;  PrevWhat == prevExist  ->
   FullUrl = url_prefix(Url) ++ "/keys" ++ convert_to_string(Key),
-  Result = post_request(put, FullUrl, [{"value", Value}, {"prevValue", PrevValue}, {"ttl", TTL}], Timeout),
+  Result = post_request(put, FullUrl, [{value, Value}, {PrevWhat, Prev}, {ttl, TTL}], Timeout),
   handle_request_result(Result).
 
 %% @spec (Url, Key, Timeout) -> Result

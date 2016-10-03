@@ -1,5 +1,6 @@
 -type url() :: string().
 -type key() :: string() | binary().
+-type prev_value() :: binary() | {prevValue, binary()} | {prevIndex, integer()} | {prevExist, boolean()}.
 -type value() :: string() | binary().
 -type pos_timeout() ::  pos_integer() | 'infinity'.
 -type result() :: {ok, response() | [response()]} | {error, any()}.
